@@ -18,7 +18,7 @@ class UploadEmployeeCsvRequest extends FormRequest
             'file' => [
                 'required',
                 'file',
-                'mimes:jpg',
+                'mimes:csv,txt',
                 new ServerUploadLimit(),
             ],
         ];

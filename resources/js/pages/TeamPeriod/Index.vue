@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { calculate } from '@/routes/team-period';
 
@@ -14,9 +14,13 @@ defineProps<{
     results?: ResultRow[];
 }>();
 
-const file = ref<File | null>(null);
 const isDragging = ref(false);
-const isUploading = ref(false);
+
+const form = useForm<{
+    file: File | null;
+}>({
+    file: null,
+});
 
 const selectFile = (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -26,41 +30,38 @@ const selectFile = (event: Event) => {
     }
 
     uploadFile(input.files[0]);
+
+    input.value = '';
 };
 
 const handleDrop = (event: DragEvent) => {
     isDragging.value = false;
 
-    const droppedFile = event.dataTransfer?.files?.[0];
+    const file = event.dataTransfer?.files?.[0];
 
-    if (!droppedFile) {
+    if (!file) {
         return;
     }
 
-    uploadFile(droppedFile);
+    uploadFile(file);
 };
 
-const uploadFile = (selectedFile: File) => {
-    if (!selectedFile.name.toLowerCase().endsWith('.csv')) {
+const uploadFile = (file: File) => {
+    form.clearErrors('file');
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        form.file = null;
+        form.setError('file', 'Please select a valid CSV file.');
+
         return;
     }
 
-    file.value = selectedFile;
-    isUploading.value = true;
+    form.file = file;
 
-    router.post(
-        calculate.url(),
-        {
-            file: selectedFile,
-        },
-        {
-            forceFormData: true,
-            preserveScroll: true,
-            onFinish: () => {
-                isUploading.value = false;
-            },
-        },
-    );
+    form.post(calculate.url(), {
+        forceFormData: true,
+        preserveScroll: true,
+    });
 };
 </script>
 
@@ -72,11 +73,14 @@ const uploadFile = (selectedFile: File) => {
             <section class="rounded-lg border border-gray-200 bg-white p-6">
                 <label
                     class="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 text-center transition"
-                    :class="
+                    :class="[
                         isDragging
                             ? 'border-gray-500 bg-gray-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                    "
+                            : 'border-gray-300 hover:border-gray-400',
+                        form.errors.file
+                            ? 'border-red-300 bg-red-50'
+                            : '',
+                    ]"
                     @dragenter.prevent="isDragging = true"
                     @dragover.prevent="isDragging = true"
                     @dragleave.prevent="isDragging = false"
@@ -114,16 +118,17 @@ const uploadFile = (selectedFile: File) => {
                         type="file"
                         accept=".csv,text/csv"
                         class="hidden"
+                        :disabled="form.processing"
                         @change="selectFile"
                     />
                 </label>
 
                 <div
-                    v-if="file"
+                    v-if="form.file && !form.errors.file"
                     class="mt-4 flex items-center gap-2 text-sm text-gray-600"
                 >
                     <svg
-                        v-if="!isUploading"
+                        v-if="!form.processing"
                         class="h-5 w-5 text-green-500"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -137,11 +142,18 @@ const uploadFile = (selectedFile: File) => {
 
                     <span>
                         {{
-                            isUploading
-                                ? `Processing ${file.name}...`
-                                : file.name
+                            form.processing
+                                ? `Processing ${form.file.name}...`
+                                : form.file.name
                         }}
                     </span>
+                </div>
+
+                <div
+                    v-if="form.errors.file"
+                    class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                    {{ form.errors.file }}
                 </div>
             </section>
 
@@ -162,15 +174,12 @@ const uploadFile = (selectedFile: File) => {
                                 <th class="px-6 py-3 font-medium">
                                     Employee ID #1
                                 </th>
-
                                 <th class="px-6 py-3 font-medium">
                                     Employee ID #2
                                 </th>
-
                                 <th class="px-6 py-3 font-medium">
                                     Project ID
                                 </th>
-
                                 <th class="px-6 py-3 font-medium">
                                     Days worked
                                 </th>
