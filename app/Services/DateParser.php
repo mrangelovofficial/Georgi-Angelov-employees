@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\CsvException;
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 
 class DateParser
 {
@@ -24,10 +25,14 @@ class DateParser
         }
 
         foreach (self::FORMATS as $format) {
-            $date = CarbonImmutable::createFromFormat('!'.$format, $value);
+            try {
+                $date = CarbonImmutable::createFromFormat('!'.$format, $value);
 
-            if ($date instanceof CarbonImmutable && $date->format($format) === $value) {
-                return $date;
+                if ($date->format($format) === $value) {
+                    return $date;
+                }
+            } catch (InvalidFormatException) {
+                continue;
             }
         }
 
