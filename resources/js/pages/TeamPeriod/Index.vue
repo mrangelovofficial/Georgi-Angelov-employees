@@ -4,14 +4,15 @@ import { ref } from 'vue';
 import { calculate } from '@/routes/team-period';
 
 type ResultRow = {
-    employee_id_1: number;
-    employee_id_2: number;
+    employee1_id: number;
+    employee2_id: number;
     project_id: number;
-    days_worked: number;
+    days_worked_together: number;
 };
 
 defineProps<{
     results?: ResultRow[];
+    invalid_rows?: number;
 }>();
 
 const isDragging = ref(false);
@@ -153,6 +154,16 @@ const uploadFile = (file: File) => {
                 </div>
             </section>
 
+            <div
+                v-if="invalid_rows > 0 && !form.processing && !form.errors.file"
+                role="status"
+                class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+                {{ invalid_rows }}
+                {{ invalid_rows === 1 ? 'invalid row was' : 'invalid rows were' }}
+                skipped.
+            </div>
+
             <section
                 v-if="results?.length"
                 class="overflow-hidden rounded-lg border border-gray-200 bg-white"
@@ -188,11 +199,11 @@ const uploadFile = (file: File) => {
                                 :key="`${row.employee_id_1}-${row.employee_id_2}-${row.project_id}`"
                             >
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.employee_id_1 }}
+                                    {{ row.employee1_id }}
                                 </td>
 
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.employee_id_2 }}
+                                    {{ row.employee2_id }}
                                 </td>
 
                                 <td class="px-6 py-3 text-gray-700">
@@ -200,7 +211,7 @@ const uploadFile = (file: File) => {
                                 </td>
 
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.days_worked }}
+                                    {{ row.days_worked_together }}
                                 </td>
                             </tr>
                         </tbody>
