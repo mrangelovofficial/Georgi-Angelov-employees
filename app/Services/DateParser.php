@@ -24,7 +24,7 @@ class DateParser
         }
 
         foreach (self::FORMATS as $format) {
-            $date = CarbonImmutable::createFromFormat('!' . $format, $value);
+            $date = CarbonImmutable::createFromFormat('!'.$format, $value);
 
             if ($date instanceof CarbonImmutable && $date->format($format) === $value) {
                 return $date;

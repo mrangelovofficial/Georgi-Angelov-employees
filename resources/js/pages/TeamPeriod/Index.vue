@@ -77,9 +77,7 @@ const uploadFile = (file: File) => {
                         isDragging
                             ? 'border-gray-500 bg-gray-50'
                             : 'border-gray-300 hover:border-gray-400',
-                        form.errors.file
-                            ? 'border-red-300 bg-red-50'
-                            : '',
+                        form.errors.file ? 'border-red-300 bg-red-50' : '',
                     ]"
                     @dragenter.prevent="isDragging = true"
                     @dragover.prevent="isDragging = true"
@@ -104,9 +102,7 @@ const uploadFile = (file: File) => {
                         Drag & drop a CSV file here
                     </p>
 
-                    <p class="my-2 text-sm text-gray-400">
-                        or
-                    </p>
+                    <p class="my-2 text-sm text-gray-400">or</p>
 
                     <span
                         class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"

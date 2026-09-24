@@ -19,7 +19,7 @@ class UploadEmployeeCsvRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:csv,txt',
-                new ServerUploadLimit(),
+                new ServerUploadLimit,
             ],
         ];
     }

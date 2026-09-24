@@ -9,8 +9,7 @@ class EmployeePairService
     public function __construct(
         private CsvEmployeeReader $csvEmployeeReader,
         private EmployeeProjectPeriodMapper $employeeProjectPeriodMapper,
-    ) {
-    }
+    ) {}
 
     public function calculate(string $path): array
     {

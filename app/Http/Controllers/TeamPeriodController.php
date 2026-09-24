@@ -20,8 +20,9 @@ final class TeamPeriodController extends Controller
             $results = $employeePairService->calculate(
                 $request->file('file')
             );
-            //Test results
+            // Test results
             dd($results);
+
             return inertia('TeamPeriod/Index', [
                 'results' => $results,
             ]);
