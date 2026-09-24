@@ -50,10 +50,6 @@ class CsvEmployeeReader
                 continue;
             }
 
-            if (count($row) !== 4) {
-                throw new RuntimeException('Invalid CSV format.');
-            }
-
             return $row;
         }
 
