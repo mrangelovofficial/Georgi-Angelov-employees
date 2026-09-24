@@ -64,6 +64,11 @@ class EmployeePairService
             }
         }
 
+        usort($results, function (array $firstResult, array $secondResult): int {
+            return $secondResult['days_worked_together']
+                <=> $firstResult['days_worked_together'];
+        });
+
         return [
             'results' => $results,
             'invalid_rows' => $invalidRows,
