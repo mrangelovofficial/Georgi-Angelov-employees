@@ -3,22 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadEmployeeCsvRequest;
+use App\Services\EmployeePairService;
+use RuntimeException;
 
 final class TeamPeriodController extends Controller
 {
     public function index()
     {
-
         return inertia('TeamPeriod/Index');
     }
 
-    public function calculate(UploadEmployeeCsvRequest $request)
+    public function calculate(UploadEmployeeCsvRequest $request, EmployeePairService $employeePairService)
     {
-        $file = $request->file('file');
 
-        // Process the uploaded file and perform calculations
-        // ...
-
-        // return redirect()->route('team-period.index')->with('success', 'Calculations completed successfully.');
+        try {
+            $results = $employeePairService->calculate(
+                $request->file('file')
+            );
+            //Test results
+            dd($results);
+            return inertia('TeamPeriod/Index', [
+                'results' => $results,
+            ]);
+        } catch (RuntimeException $e) {
+            return back()->withErrors([
+                'file' => $e->getMessage(),
+            ]);
+        }
     }
 }
