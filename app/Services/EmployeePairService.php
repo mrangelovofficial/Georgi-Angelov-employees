@@ -10,6 +10,7 @@ class EmployeePairService
         private CsvEmployeeReader $csvEmployeeReader,
         private EmployeeProjectPeriodMapper $employeeProjectPeriodMapper,
         private IntervalMerger $intervalMerger,
+        private OverlapCalculator $overlapCalculator,
     ) {}
 
     public function calculate(string $path): array
@@ -34,8 +35,37 @@ class EmployeePairService
             }
         }
 
+        foreach ($projects as $projectId => $employees) {
+            $employeeIds = array_keys($employees);
+            $employeeCount = count($employeeIds);
+
+            for ($currentIndex = 0; $currentIndex < $employeeCount - 1; $currentIndex++) {
+                $currentEmployeeId = $employeeIds[$currentIndex];
+                $currentEmployeePeriods = $employees[$currentEmployeeId];
+
+                for ($comparedIndex = $currentIndex + 1; $comparedIndex < $employeeCount; $comparedIndex++) {
+                    $comparedEmployeeId = $employeeIds[$comparedIndex];
+                    $comparedEmployeePeriods = $employees[$comparedEmployeeId];
+
+                    $overlapDays = $this->overlapCalculator->calculate(
+                        $currentEmployeePeriods,
+                        $comparedEmployeePeriods
+                    );
+
+                    if ($overlapDays > 0) {
+                        $results[] = [
+                            'employee1_id' => $currentEmployeeId,
+                            'employee2_id' => $comparedEmployeeId,
+                            'project_id' => $projectId,
+                            'days_worked_together' => $overlapDays,
+                        ];
+                    }
+                }
+            }
+        }
+
         return [
-            'projects' => $projects,
+            'results' => $results,
             'invalid_rows' => $invalidRows,
         ];
     }
