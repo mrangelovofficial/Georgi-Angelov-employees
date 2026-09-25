@@ -43,7 +43,7 @@ class CsvEmployeeReader
 
     private function readRow($handle): ?array
     {
-        while (($row = fgetcsv($handle)) !== false) {
+        while (($row = fgetcsv($handle, null, ',', '"', '')) !== false) {
             $row = $this->cleanRow($row);
 
             if ($this->isEmptyRow($row)) {
