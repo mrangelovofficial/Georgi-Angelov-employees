@@ -47,7 +47,7 @@ class CalculateEmployeePairs extends Command
             $batch = [];
 
             foreach ($rows as $row) {
-                $batch[] = $row;
+                $batch[] = $this->formatRow($row);
 
                 if (count($batch) === 1000) {
                     $this->table(self::HEADERS, $batch);
@@ -59,7 +59,10 @@ class CalculateEmployeePairs extends Command
                 $this->table(self::HEADERS, $batch);
             }
         } else {
-            $this->table(self::HEADERS, $rows->take(20));
+            $this->table(
+                self::HEADERS,
+                array_map(fn ($row) => $this->formatRow($row), $rows->take(20))
+            );
         }
 
         $this->newLine();
@@ -79,5 +82,15 @@ class CalculateEmployeePairs extends Command
         $this->line('Peak memory: '.round($peakMemory / 1024 / 1024, 2).' MB');
 
         return self::SUCCESS;
+    }
+
+    private function formatRow(object $row): array
+    {
+        return [
+            $row->employee1Id,
+            $row->employee2Id,
+            $row->projectId,
+            $row->daysWorkedTogether,
+        ];
     }
 }
