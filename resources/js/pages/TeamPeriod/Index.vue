@@ -4,10 +4,10 @@ import { ref } from 'vue';
 import { calculate } from '@/routes/team-period';
 
 type ResultRow = {
-    employee1_id: number;
-    employee2_id: number;
-    project_id: number;
-    days_worked_together: number;
+    employee1Id: number;
+    employee2Id: number;
+    projectId: number;
+    daysWorkedTogether: number;
 };
 
 defineProps<{
@@ -219,22 +219,22 @@ const uploadFile = (file: File) => {
                         <tbody class="divide-y divide-gray-100">
                             <tr
                                 v-for="row in results"
-                                :key="`${row.employee1_id}-${row.employee2_id}-${row.project_id}`"
+                                :key="`${row.employee1Id}-${row.employee2Id}-${row.projectId}`"
                             >
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.employee1_id }}
+                                    {{ row.employee1Id }}
                                 </td>
 
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.employee2_id }}
+                                    {{ row.employee2Id }}
                                 </td>
 
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.project_id }}
+                                    {{ row.projectId }}
                                 </td>
 
                                 <td class="px-6 py-3 text-gray-700">
-                                    {{ row.days_worked_together }}
+                                    {{ row.daysWorkedTogether }}
                                 </td>
                             </tr>
                         </tbody>
