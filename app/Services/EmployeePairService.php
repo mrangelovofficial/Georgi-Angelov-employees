@@ -15,6 +15,7 @@ class EmployeePairService
 
     public function calculate(string $path): array
     {
+        $results = [];
         $projects = [];
         $invalidRows = 0;
 
