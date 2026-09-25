@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Data\EmployeeProjectPeriodData;
+
 class OverlapCalculator
 {
     public function calculate(
@@ -19,17 +21,7 @@ class OverlapCalculator
             $currentPeriod = $currentEmployeePeriods[$currentPeriodIndex];
             $comparedPeriod = $comparedEmployeePeriods[$comparedPeriodIndex];
 
-            $overlapStart = $currentPeriod->dateFrom->greaterThan($comparedPeriod->dateFrom)
-                ? $currentPeriod->dateFrom
-                : $comparedPeriod->dateFrom;
-
-            $overlapEnd = $currentPeriod->dateTo->lessThan($comparedPeriod->dateTo)
-                ? $currentPeriod->dateTo
-                : $comparedPeriod->dateTo;
-
-            if ($overlapStart->lessThanOrEqualTo($overlapEnd)) {
-                $totalOverlapDays += $overlapStart->diffInDays($overlapEnd) + 1;
-            }
+            $totalOverlapDays += $this->calculatePeriodOverlap($currentPeriod, $comparedPeriod);
 
             if ($currentPeriod->dateTo->equalTo($comparedPeriod->dateTo)) {
                 $currentPeriodIndex++;
@@ -42,5 +34,15 @@ class OverlapCalculator
         }
 
         return $totalOverlapDays;
+    }
+
+    public function calculatePeriodOverlap(
+        EmployeeProjectPeriodData $first,
+        EmployeeProjectPeriodData $second,
+    ): int {
+        $start = max($first->dateFrom, $second->dateFrom);
+        $end = min($first->dateTo, $second->dateTo);
+
+        return $start <= $end ? date_diff($start, $end)->days + 1 : 0;
     }
 }

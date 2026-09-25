@@ -9,66 +9,38 @@ class EmployeePairService
     public function __construct(
         private CsvEmployeeReader $csvEmployeeReader,
         private EmployeeProjectPeriodMapper $employeeProjectPeriodMapper,
-        private IntervalMerger $intervalMerger,
-        private OverlapCalculator $overlapCalculator,
+        private ProjectPeriodStore $projectPeriodStore,
+        private ProjectPairCalculator $projectPairCalculator,
     ) {}
 
     public function calculate(string $path): array
     {
-        $results = [];
-        $projects = [];
+        $results = EmployeePairResults::create();
         $invalidRows = 0;
 
-        foreach ($this->csvEmployeeReader->read($path) as $row) {
-            try {
-                $period = $this->employeeProjectPeriodMapper->map($row);
+        try {
+            foreach ($this->csvEmployeeReader->read($path) as $row) {
+                try {
+                    $period = $this->employeeProjectPeriodMapper->map($row);
+                } catch (CsvException) {
+                    $invalidRows++;
 
-                $projects[$period->projectId][$period->employeeId][] = $period;
-            } catch (CsvException) {
-                $invalidRows++;
+                    continue;
+                }
+
+                $this->projectPeriodStore->add($period);
             }
-        }
 
-        foreach ($projects as $projectId => $employees) {
-            foreach ($employees as $employeeId => $periods) {
-                $projects[$projectId][$employeeId] =
-                    $this->intervalMerger->merge($periods);
-            }
-        }
-
-        foreach ($projects as $projectId => $employees) {
-            $employeeIds = array_keys($employees);
-            $employeeCount = count($employeeIds);
-
-            for ($currentIndex = 0; $currentIndex < $employeeCount - 1; $currentIndex++) {
-                $currentEmployeeId = $employeeIds[$currentIndex];
-                $currentEmployeePeriods = $employees[$currentEmployeeId];
-
-                for ($comparedIndex = $currentIndex + 1; $comparedIndex < $employeeCount; $comparedIndex++) {
-                    $comparedEmployeeId = $employeeIds[$comparedIndex];
-                    $comparedEmployeePeriods = $employees[$comparedEmployeeId];
-
-                    $overlapDays = $this->overlapCalculator->calculate(
-                        $currentEmployeePeriods,
-                        $comparedEmployeePeriods
-                    );
-
-                    if ($overlapDays > 0) {
-                        $results[] = [
-                            'employee1_id' => $currentEmployeeId,
-                            'employee2_id' => $comparedEmployeeId,
-                            'project_id' => $projectId,
-                            'days_worked_together' => $overlapDays,
-                        ];
-                    }
+            foreach ($this->projectPeriodStore->projects() as $employees) {
+                foreach ($this->projectPairCalculator->calculate($employees) as $result) {
+                    $results->add($result);
                 }
             }
+        } finally {
+            $this->projectPeriodStore->clear();
         }
 
-        usort($results, function (array $firstResult, array $secondResult): int {
-            return $secondResult['days_worked_together']
-                <=> $firstResult['days_worked_together'];
-        });
+        $results->flush();
 
         return [
             'results' => $results,
