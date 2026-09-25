@@ -13,6 +13,13 @@ class CalculateEmployeePairs extends Command
 
     protected $description = 'Calculate employee pairs from a CSV file';
 
+    private const HEADERS = [
+        'Employee ID #1',
+        'Employee ID #2',
+        'Project ID',
+        'Days Worked Together',
+    ];
+
     public function handle(EmployeePairService $employeePairService): int
     {
         $path = $this->argument('file');
@@ -30,25 +37,30 @@ class CalculateEmployeePairs extends Command
 
         $rows = $result['results'];
 
-        if (empty($rows)) {
+        if (count($rows) === 0) {
             $this->info('No employee pairs found.');
 
             return self::SUCCESS;
         }
 
-        if (! $this->option('all')) {
-            $rows = array_slice($rows, 0, 20);
-        }
+        if ($this->option('all')) {
+            $batch = [];
 
-        $this->table(
-            [
-                'Employee ID #1',
-                'Employee ID #2',
-                'Project ID',
-                'Days worked together',
-            ],
-            $rows
-        );
+            foreach ($rows as $row) {
+                $batch[] = $row;
+
+                if (count($batch) === 1000) {
+                    $this->table(self::HEADERS, $batch);
+                    $batch = [];
+                }
+            }
+
+            if ($batch !== []) {
+                $this->table(self::HEADERS, $batch);
+            }
+        } else {
+            $this->table(self::HEADERS, $rows->page(limit: 20)['rows']);
+        }
 
         $this->newLine();
 
