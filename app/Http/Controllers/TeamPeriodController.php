@@ -12,6 +12,7 @@ final class TeamPeriodController extends Controller
     {
         return inertia('TeamPeriod/Index', [
             'results' => session('results', []),
+            'results_count' => session('results_count', 0),
             'invalid_rows' => session('invalid_rows', 0),
         ]);
     }
@@ -24,11 +25,14 @@ final class TeamPeriodController extends Controller
             );
 
             return to_route('team-period.index')->with([
-                'results' => $results['results'],
+                'results' => $request->boolean('all')
+                    ? iterator_to_array($results['results'])
+                    : $results['results']->take(20),
+                'results_count' => count($results['results']),
                 'invalid_rows' => $results['invalid_rows'],
             ]);
         } catch (RuntimeException $e) {
-            return back()->withErrors([
+            return to_route('team-period.index')->withErrors([
                 'file' => $e->getMessage(),
             ]);
         }

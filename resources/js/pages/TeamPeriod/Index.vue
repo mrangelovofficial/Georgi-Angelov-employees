@@ -13,14 +13,17 @@ type ResultRow = {
 defineProps<{
     results?: ResultRow[];
     invalid_rows?: number;
+    results_count?: number;
 }>();
 
 const isDragging = ref(false);
 
 const form = useForm<{
     file: File | null;
+    all: boolean;
 }>({
     file: null,
+    all: false,
 });
 
 const selectFile = (event: Event) => {
@@ -119,7 +122,16 @@ const uploadFile = (file: File) => {
                         @change="selectFile"
                     />
                 </label>
-
+                <label
+                    class="mb-4 flex items-center gap-2 text-sm text-gray-700"
+                >
+                    <input
+                        type="checkbox"
+                        v-model="form.all"
+                        :disabled="form.processing"
+                    />
+                    Show all results (otherwise first 20)
+                </label>
                 <div
                     v-if="form.file && !form.errors.file"
                     class="mt-4 flex items-center gap-2 text-sm text-gray-600"
@@ -179,6 +191,10 @@ const uploadFile = (file: File) => {
                     <h2 class="text-lg font-semibold text-gray-900">
                         Common Projects
                     </h2>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Showing {{ results.length.toLocaleString() }} of
+                        {{ results_count?.toLocaleString() }} results
+                    </p>
                 </div>
 
                 <div class="overflow-x-auto">

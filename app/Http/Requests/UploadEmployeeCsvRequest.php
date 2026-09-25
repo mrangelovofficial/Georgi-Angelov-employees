@@ -15,6 +15,7 @@ class UploadEmployeeCsvRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'all' => ['sometimes', 'boolean'],
             'file' => [
                 'required',
                 'file',

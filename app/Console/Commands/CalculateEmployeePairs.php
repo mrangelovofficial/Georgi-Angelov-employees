@@ -59,7 +59,7 @@ class CalculateEmployeePairs extends Command
                 $this->table(self::HEADERS, $batch);
             }
         } else {
-            $this->table(self::HEADERS, $rows->page(limit: 20)['rows']);
+            $this->table(self::HEADERS, $rows->take(20));
         }
 
         $this->newLine();
