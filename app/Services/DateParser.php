@@ -8,6 +8,8 @@ use Carbon\Exceptions\InvalidFormatException;
 
 class DateParser
 {
+    private const CACHE_SIZE = 10000;
+
     private const FORMATS = [
         'Y-m-d',
         'Y/m/d',
@@ -15,6 +17,8 @@ class DateParser
         'd/m/Y',
         'd.m.Y',
     ];
+
+    private array $cache = [];
 
     public function parse(string $value): CarbonImmutable
     {
@@ -24,13 +28,29 @@ class DateParser
             throw new CsvException('Date cannot be empty.');
         }
 
+        if (isset($this->cache[$value])) {
+            return $this->cache[$value];
+        }
+
         foreach (self::FORMATS as $format) {
             try {
                 $date = CarbonImmutable::createFromFormat('!'.$format, $value);
 
-                if ($date->format($format) === $value) {
-                    return $date;
+                if ($date->format($format) !== $value) {
+                    continue;
                 }
+
+                if (count($this->cache) >= self::CACHE_SIZE) {
+                    $firstKey = array_key_first($this->cache);
+
+                    if ($firstKey !== null) {
+                        unset($this->cache[$firstKey]);
+                    }
+                }
+
+                $this->cache[$value] = $date;
+
+                return $date;
             } catch (InvalidFormatException) {
                 continue;
             }

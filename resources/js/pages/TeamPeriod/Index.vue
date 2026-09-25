@@ -155,12 +155,19 @@ const uploadFile = (file: File) => {
             </section>
 
             <div
-                v-if="invalid_rows > 0 && !form.processing && !form.errors.file"
+                v-if="
+                    invalid_rows !== undefined &&
+                    invalid_rows > 0 &&
+                    !form.processing &&
+                    !form.errors.file
+                "
                 role="status"
                 class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
             >
                 {{ invalid_rows }}
-                {{ invalid_rows === 1 ? 'invalid row was' : 'invalid rows were' }}
+                {{
+                    invalid_rows === 1 ? 'invalid row was' : 'invalid rows were'
+                }}
                 skipped.
             </div>
 
@@ -196,7 +203,7 @@ const uploadFile = (file: File) => {
                         <tbody class="divide-y divide-gray-100">
                             <tr
                                 v-for="row in results"
-                                :key="`${row.employee_id_1}-${row.employee_id_2}-${row.project_id}`"
+                                :key="`${row.employee1_id}-${row.employee2_id}-${row.project_id}`"
                             >
                                 <td class="px-6 py-3 text-gray-700">
                                     {{ row.employee1_id }}
@@ -217,6 +224,17 @@ const uploadFile = (file: File) => {
                         </tbody>
                     </table>
                 </div>
+            </section>
+            <section
+                v-else-if="
+                    !form.processing &&
+                    !form.errors.file &&
+                    results !== undefined &&
+                    results.length === 0
+                "
+                class="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600"
+            >
+                <p>No results to display.</p>
             </section>
         </div>
     </main>
